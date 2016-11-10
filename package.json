@@ -1,13 +1,13 @@
 {
   "name": "node-stylus-require",
-  "version": "0.2.1",
-  "description": "",
+  "version": "0.3.0",
+  "description": "Allows require to import css-module objects(tokens) from stylus files.",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/mocha/bin/mocha --slow 0 tests/**-spec.js"
   },
   "author": "Joel Roxell <joel.roxell@na-kd.com> (https://github.com/JoelRoxell)",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "generic-names": "^1.0.2",
     "postcss": "^5.2.5",
