@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha tests/**-spec.js"
+    "test": "node_modules/mocha/bin/mocha --slow 0 tests/**-spec.js"
   },
   "author": "Joel Roxell <joel.roxell@na-kd.com> (https://github.com/JoelRoxell)",
   "license": "ISC",
