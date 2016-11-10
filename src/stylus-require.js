@@ -1,4 +1,3 @@
-// TODO: Create a more generic module transpiler and perform asyn reads.
 const postcss = require('postcss');
 const Values = require('postcss-modules-values');
 const LocalByDefault = require('postcss-modules-local-by-default');
@@ -16,11 +15,11 @@ let result;
  *
  * @method extractor
  * @param  {Function}   compileStylus function which generates the css.
+ * @param  {String}     scopeNaming default: [name]__[local]___[hash:base64:5]
  * @return {Processor}  Postcss processor specified with which plugins to run on the generated css.
  */
-function extractor(compileStylus) {
-  const generateScopedName = genericNames('[name]__[local]___[hash:base64:5]');
-
+function extractor(compileStylus, scopeNaming = '[name]__[local]___[hash:base64:5]') {
+  const generateScopedName = genericNames(scopeNaming);
   const plugins = ([
     Values,
     LocalByDefault,
@@ -36,11 +35,12 @@ function extractor(compileStylus) {
  *
  * @method compileStylus
  * @param  {String} filename Path to the require file.
+ * @param  {Function} preTransformer hook used to perform additional changes to the style before stylus compilation.
+ * @param  {Function} postTrasformer hook used to perform actions after compilation.
  * @return {Object} Generated css scoped module names.
  */
-function compileStylus(filename, preTransformer, postTrasformer) {
+function compileStylus(filename, preTransformer, postTrasformer, scopeNaming) {
   let css;
-  // FIXME: Read files async.
   let fileContent = readFileSync(filename, 'utf8', { filename });
 
   if (typeof preTransformer === 'function') {
@@ -53,7 +53,7 @@ function compileStylus(filename, preTransformer, postTrasformer) {
     css = postTrasformer(css);
   }
 
-  result = extractor(compileStylus).process(css, { from: filename });
+  result = extractor(compileStylus, scopeNaming).process(css, { from: filename });
 
   return result.root.tokens;
 }
@@ -64,22 +64,26 @@ function compileStylus(filename, preTransformer, postTrasformer) {
  *
  * @method createStyleRequireHook
  * @param  {function} compile Handels the imported filename.
- * @param  {String}   extension Specifes what type of file `compile` should be used on.
+ * @param  {Function} preTransformer hook used to perform additional changes to the style before stylus compilation.
+ * @param  {Function} postTrasformer hook used to perform actions after compilation.
  */
-function createStyleRequireHook(styleCompiler, preTransformer, postTrasformer) {
+function createStyleRequireHook(styleCompiler, preTransformer, postTrasformer, scopeNaming) {
   require.extensions['.styl'] = function(module, filename) {
-    const tokens = styleCompiler(filename, preTransformer, postTrasformer);
+    const tokens = styleCompiler(filename, preTransformer, postTrasformer, scopeNaming);
 
     module._compile('module.exports = ' + JSON.stringify(tokens), filename);
   };
 }
 
-module.exports = function stylusRequire(preTransformer) {
-  return (postTrasformer) => {
-    return createStyleRequireHook(
-      compileStylus,
-      preTransformer,
-      postTrasformer
-    );
+module.exports = function stylusRequire(scopeNaming) {
+  return (preTransformer) => {
+    return (postTrasformer) => {
+      return createStyleRequireHook(
+        compileStylus,
+        preTransformer,
+        postTrasformer,
+        scopeNaming
+      );
+    }
   }
 }

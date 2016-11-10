@@ -3,7 +3,7 @@ const prependStyleLoader = require('prepend-style-loader');
 
 const nodeStylusRequire = require('../src');
 
-nodeStylusRequire(
+nodeStylusRequire('[name]__[local]___[hash:base64:5]')(
   /* pre-transformer */
   function preTransformer(fileContent) {
     fileContent = prependStyleLoader.apply({
