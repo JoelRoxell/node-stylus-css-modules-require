@@ -4,7 +4,7 @@ const prependStyleLoader = require('prepend-style-loader');
 const nodeStylusRequire = require('../src');
 
 nodeStylusRequire(
-  /* pre-tranformer */
+  /* pre-transformer */
   function preTransformer(fileContent) {
     fileContent = prependStyleLoader.apply({
      query: 'prepend=[tests/variables.styl]',
@@ -14,7 +14,7 @@ nodeStylusRequire(
     return fileContent;
   }
 )(
-  /* post-tranformer */
+  /* post-transformer */
   function postTrasformer(css) {
     return css;
   }
