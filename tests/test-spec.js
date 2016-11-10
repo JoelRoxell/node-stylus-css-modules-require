@@ -15,7 +15,7 @@ nodeStylusRequire('[name]__[local]___[hash:base64:5]')(
   }
 )(
   /* post-transformer */
-  function postTrasformer(css) {
+  function postTransformer(css) {
     return css;
   }
 );
