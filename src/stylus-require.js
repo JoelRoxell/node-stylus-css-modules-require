@@ -1,5 +1,4 @@
-// TODO: Create a more generic module transpiler.
-
+// TODO: Create a more generic module transpiler and perform asyn reads.
 const postcss = require('postcss');
 const Values = require('postcss-modules-values');
 const LocalByDefault = require('postcss-modules-local-by-default');
@@ -9,7 +8,6 @@ const Parser = require('postcss-modules-parser');
 const genericNames = require('generic-names');
 const stylus = require('stylus');
 const { readFileSync } = require('fs');
-const prependStyleLoader = require('prepend-style-loader');
 
 let result;
 
@@ -40,21 +38,21 @@ function extractor(compileStylus) {
  * @param  {String} filename Path to the require file.
  * @return {Object} Generated css scoped module names.
  */
-function compileStylus(filename, prepend) {
+function compileStylus(filename, preTransformer, postTrasformer) {
+  let css;
+  // FIXME: Read files async.
   let fileContent = readFileSync(filename, 'utf8', { filename });
 
-  // TODO: pre-transformer hook
-  if (prepend.length > 0) {
-    fileContent = prependStyleLoader.apply({
-      query: 'prepend=[' + prepend.toString() +']',
-      cacheable: function() {}
-    }, [fileContent]);
+  if (typeof preTransformer === 'function') {
+    fileContent = preTransformer(fileContent);
   }
 
-  // TODO: compile hook
-  const css = stylus.render(fileContent);
+  css = stylus.render(fileContent);
 
-  // TODO: post-compile hook
+  if (typeof postTrasformer === 'function') {
+    css = postTrasformer(css);
+  }
+
   result = extractor(compileStylus).process(css, { from: filename });
 
   return result.root.tokens;
@@ -68,24 +66,20 @@ function compileStylus(filename, prepend) {
  * @param  {function} compile Handels the imported filename.
  * @param  {String}   extension Specifes what type of file `compile` should be used on.
  */
-function createStyleRequireHook(styleCompiler, extension, prependFiles) {
-  require.extensions[extension] = function(module, filename) {
-    const tokens = styleCompiler(filename, prependFiles);
+function createStyleRequireHook(styleCompiler, preTransformer, postTrasformer) {
+  require.extensions['.styl'] = function(module, filename) {
+    const tokens = styleCompiler(filename, preTransformer, postTrasformer);
 
     module._compile('module.exports = ' + JSON.stringify(tokens), filename);
   };
 }
 
-module.exports = function stylusRequire(prenedFiles = []) {
-  return (transformer) => {
-    return (postTrasformer) => {
-      return createStyleRequireHook(
-        compileStylus,
-        '.styl',
-        prenedFiles,
-        transformer,
-        postTrasformer
-      );
-    }
+module.exports = function stylusRequire(preTransformer) {
+  return (postTrasformer) => {
+    return createStyleRequireHook(
+      compileStylus,
+      preTransformer,
+      postTrasformer
+    );
   }
 }
