@@ -32,4 +32,10 @@ describe('node-stylus-css-module-require', function() {
 
     expect(style.wrapper).to.exist;
   });
+
+  it('should camelcase properties', function() {
+    const style = require('./another-isolated-style.styl');
+
+    expect(style.someCamelcaseProperty).to.exist;
+  });
 });

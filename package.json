@@ -9,6 +9,7 @@
   "author": "Joel Roxell <joel.roxell@na-kd.com> (https://github.com/JoelRoxell)",
   "license": "MIT",
   "dependencies": {
+    "camelcase": "^4.0.0",
     "generic-names": "^1.0.2",
     "postcss": "^5.2.5",
     "postcss-modules-extract-imports": "^1.0.1",

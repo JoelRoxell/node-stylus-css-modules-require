@@ -6,6 +6,7 @@ const Scope = require('postcss-modules-scope');
 const Parser = require('postcss-modules-parser');
 const genericNames = require('generic-names');
 const stylus = require('stylus');
+const camelCase = require('camelcase');
 const { readFileSync } = require('fs');
 
 let result;
@@ -28,6 +29,22 @@ function extractor(compileStylus, scopeNaming = '[name]__[local]___[hash:base64:
   ]).concat(new Parser({ compileStylus }));
 
   return postcss(plugins);
+}
+
+/**
+ * camelcases passed tokens
+ *
+ * @param  {Object} tokens Object containeing the generated css-module tokens.
+ * @return {Object}        Object containging both the generated tokens and camelcased "aliases".
+ */
+function camelCaseTokens(tokens) {
+  for (var property in tokens) {
+    if (tokens.hasOwnProperty(property)) {
+      tokens[camelCase(property)] = tokens[property];
+    }
+  }
+
+  return tokens;
 }
 
 /**
@@ -55,7 +72,7 @@ function compileStylus(filename, preTransformer, postTrasformer, scopeNaming) {
 
   result = extractor(compileStylus, scopeNaming).process(css, { from: filename });
 
-  return result.root.tokens;
+  return camelCaseTokens(result.root.tokens);
 }
 
 /**
