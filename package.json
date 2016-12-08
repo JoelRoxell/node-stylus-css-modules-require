@@ -1,6 +1,6 @@
 {
   "name": "node-stylus-css-modules-require",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Allows require to import css-module objects(tokens) from stylus files.",
   "main": "./src/index.js",
   "scripts": {
